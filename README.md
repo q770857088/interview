@@ -133,3 +133,120 @@ abc上加了索引，ac，bc，ab会用到索引吗？
 
 ## 能够使用HTML和PHP分离开使用的模板有哪些?
 
+
+
+
+
+# 脏读,幻读,的问题
+
+什么叫脏读?幻读?还有不可重复读? 
+
+脏读,  读到了假数据(脏数据),读脏
+
+幻读,在同一个事务中, 有或无的问题, 第一次读的时候有, 第二次读的时候无
+
+不可重复读, 在同一个事务中, 两次读的结果不一样
+
+> 什么情况下回发生这种问题?
+>
+> 并发+事务隔离级别
+
+SQL级别的问题演示,模拟并发
+
+>  脏读
+
+| session1                              | session2                                    |
+| ------------------------------------- | ------------------------------------------- |
+| begin;                                | begin;                                      |
+|                                       | update user set money=money+100 where id=1; |
+| Select * from user where id=1;        |                                             |
+| # 拿着查出来的值去做了一些事情(money) |                                             |
+| commit;                               |                                             |
+|                                       | rollback;                                   |
+
+>  幻读
+
+| session1                                       | session2                                                |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| begin;                                         | begin'                                                  |
+| select * from interview.user where money=1234; |                                                         |
+|                                                | insert interview.user(name,money) value ('张三', 1234); |
+|                                                | commit;                                                 |
+| select * from user where money=1234;           |                                                         |
+| commit;                                        |                                                         |
+
+
+
+>  不可重复读
+
+| session1                                                     | session2                                        |
+| ------------------------------------------------------------ | ----------------------------------------------- |
+| begin;                                                       | begin;                                          |
+| select * from intervew.user where id=1;                      |                                                 |
+|                                                              | update interview.user set money=111 where id=1; |
+|                                                              | commit;                                         |
+| select * from interview.user where id=1; -- 这里出来的结果和以前就不一样了 |                                                 |
+| commit;                                                      |                                                 |
+
+
+
+
+
+
+
+## 继续思考
+
+隔离级别都有哪些? 
+
+| 隔离级别                  | 脏读   | 不可重复度 | 幻读   |
+| ------------------------- | ------ | ---------- | ------ |
+| 未提交读(READ UNCOMMITED) | 可能   | 可能       | 可能   |
+| 提交读(READ COMMITED)     | 不可能 | 可能       | 可能   |
+| 可重复读(REPEATABLE READ) | 不可能 | 不可能     | 可能   |
+| 串行化 (SERIALIZABLE)     | 不可能 | 不可能     | 不可能 |
+
+MySQL默认的隔离级别是什么?
+
+默认隔离级别是`可重复读`
+
+如何查看MySQL的隔离级别?
+
+```MySQL
+-- 事务隔离级别
+-- select @@transaction_isolation;
+-- select @@tx_isolation;
+show variables like '%isolation%'; -- 这个语句执行了之后, 不同的MySQL版本会有不同的结果
+-- 因为, 从5.7.20版本开始, transaction_isolation作为tx_isolation的别名被引入, 在8.0版本后tx_isolation被废弃
+-- 也就是说:
+-- <5.7.20, 只有tx_isolaiton
+-- 5.7.20~8.0 之间 tx_isolation 和 transaction_isolation 都是存在的
+-- >=8.0 只有 transaction_isolation
+```
+
+
+
+在这些隔离级别会有什么问题?
+
+在PHP层面应该注意什么?
+
+这些隔离级别存在的意义什么? 既然有问题可能出现,为什么还存在这些隔离级别? 为什么不直接用串行话, 不用其他的?
+
+隔离级别是怎么实现的?
+
+事务的四个特性(ACID)
+
+1. 原子性atomicity, 一致性consistency, 隔离性isolation,持久性durability
+
+PHP级别的问题
+
+订单积分问题
+
+
+
+索引和加行锁的问题会影响并发, 如果修改的条件没有加索引, MySQL会对所有行加锁(有待验证),
+然后再释放不满足条件的锁, 这样加锁再释放,就大大降低了并发的性能
+
+没有必要在深入下去了:
+
+怎么看MySQL加了多少锁呢? 怎么看在哪里加了锁?
+
