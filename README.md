@@ -1,4 +1,4 @@
-# interview
+# 晶打开的interview
 
 # 面试总结
 
@@ -227,15 +227,135 @@ show variables like '%isolation%'; -- 这个语句执行了之后, 不同的MySQ
 
 在这些隔离级别会有什么问题?
 
+上面有说过了,表格里面
+
 在PHP层面应该注意什么?
 
 这些隔离级别存在的意义什么? 既然有问题可能出现,为什么还存在这些隔离级别? 为什么不直接用串行话, 不用其他的?
 
 隔离级别是怎么实现的?
 
+答: 是通过锁机制来实现的, 有:
+
+那么锁又是什么呢?
+
+1. 排他锁(又叫行锁) for update,  mysql的修改和添加和删除(cud)操作默认就加这个排他锁, 加上之后别的事务不能对这个数据再加任何多锁
+2. 共享锁 lock in share mode 共享锁,对行加的锁, 加上锁之后,可以进行读写操作, 别的事务可以再次对统一个行加共享锁, 但是不能加排它锁, 而且只能读数据, 不能修改数据, 想修改数据,必须等到这个行的所有共享锁都释放了才可以修改
+3. 间隙锁,
+
+通过锁来实现的
+
+# Mysql的REPEATABLE-READ的幻读问题
+
+> 好像是解决了幻读问题,但是并没有完全解决
+
+
+
+
+
+# 那我们怎么看到锁呢?
+
+和锁相关的表
+
+ `performance_schema.data_locks`
+
+```sql
+CREATE TABLE `data_locks` (
+  `ENGINE` varchar(32) NOT NULL,
+  `ENGINE_LOCK_ID` varchar(128) NOT NULL,
+  `ENGINE_TRANSACTION_ID` bigint unsigned DEFAULT NULL,
+  `THREAD_ID` bigint unsigned DEFAULT NULL,
+  `EVENT_ID` bigint unsigned DEFAULT NULL,
+  `OBJECT_SCHEMA` varchar(64) DEFAULT NULL,
+  `OBJECT_NAME` varchar(64) DEFAULT NULL,
+  `PARTITION_NAME` varchar(64) DEFAULT NULL,
+  `SUBPARTITION_NAME` varchar(64) DEFAULT NULL,
+  `INDEX_NAME` varchar(64) DEFAULT NULL,
+  `OBJECT_INSTANCE_BEGIN` bigint unsigned NOT NULL,
+  `LOCK_TYPE` varchar(32) NOT NULL,
+  `LOCK_MODE` varchar(32) NOT NULL,
+  `LOCK_STATUS` varchar(32) NOT NULL,
+  `LOCK_DATA` varchar(8192) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  PRIMARY KEY (`ENGINE_LOCK_ID`,`ENGINE`),
+  KEY `ENGINE_TRANSACTION_ID` (`ENGINE_TRANSACTION_ID`,`ENGINE`),
+  KEY `THREAD_ID` (`THREAD_ID`,`EVENT_ID`),
+  KEY `OBJECT_SCHEMA` (`OBJECT_SCHEMA`,`OBJECT_NAME`,`PARTITION_NAME`,`SUBPARTITION_NAME`)
+) ENGINE=PERFORMANCE_SCHEMA DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+```
+
+>  这些字段都是什么意思呢?
+
+  `ENGINE`  引擎, 使用的存储引擎
+  `ENGINE_LOCK_ID`  加锁记录的id
+  `ENGINE_TRANSACTION_ID`  引擎的事务id
+  `THREAD_ID`  线程id
+  `EVENT_ID`  事件id
+  `OBJECT_SCHEMA`  对象模式
+  `OBJECT_NAME`  对象名称
+  `PARTITION_NAME`  分区名称
+  `SUBPARTITION_NAME`  下分区名称
+  `INDEX_NAME`  索引名称
+  `OBJECT_INSTANCE_BEGIN`  对象实例开始
+  `LOCK_TYPE`  锁类型
+  `LOCK_MODE` 锁模式
+  `LOCK_STATUS` 锁状态
+  `LOCK_DATA` 锁数据
+
+
+
+`data_lock_waits` 表
+
+```SQL
+CREATE TABLE `data_lock_waits` (
+  
+  `ENGINE` varchar(32) NOT NULL, 
+  -- 引擎
+  
+  `REQUESTING_ENGINE_LOCK_ID` varchar(128) NOT NULL, 
+  -- 请求锁id
+  
+  `REQUESTING_ENGINE_TRANSACTION_ID` bigint unsigned DEFAULT NULL, 
+  -- 请求引擎事务id
+  
+  `REQUESTING_THREAD_ID` bigint unsigned DEFAULT NULL,
+  -- 请求程id
+  
+  `REQUESTING_EVENT_ID` bigint unsigned DEFAULT NULL, 
+  -- 请求事务id
+  
+  `REQUESTING_OBJECT_INSTANCE_BEGIN` bigint unsigned NOT NULL, 
+  -- 请求对象实例开始
+  
+  `BLOCKING_ENGINE_LOCK_ID` varchar(128) NOT NULL,
+  -- b锁引擎锁id
+  
+  `BLOCKING_ENGINE_TRANSACTION_ID` bigint unsigned DEFAULT NULL,
+  -- b锁引擎事务锁id
+  
+  `BLOCKING_THREAD_ID` bigint unsigned DEFAULT NULL,
+  -- b锁线程id
+  
+  `BLOCKING_EVENT_ID` bigint unsigned DEFAULT NULL,
+  -- b锁事件id
+  
+  `BLOCKING_OBJECT_INSTANCE_BEGIN` bigint unsigned NOT NULL,
+  KEY `REQUESTING_ENGINE_LOCK_ID` (`REQUESTING_ENGINE_LOCK_ID`,`ENGINE`),
+  KEY `BLOCKING_ENGINE_LOCK_ID` (`BLOCKING_ENGINE_LOCK_ID`,`ENGINE`),
+  KEY `REQUESTING_ENGINE_TRANSACTION_ID` (`REQUESTING_ENGINE_TRANSACTION_ID`,`ENGINE`),
+  KEY `BLOCKING_ENGINE_TRANSACTION_ID` (`BLOCKING_ENGINE_TRANSACTION_ID`,`ENGINE`),
+  KEY `REQUESTING_THREAD_ID` (`REQUESTING_THREAD_ID`,`REQUESTING_EVENT_ID`),
+  KEY `BLOCKING_THREAD_ID` (`BLOCKING_THREAD_ID`,`BLOCKING_EVENT_ID`)
+) ENGINE=PERFORMANCE_SCHEMA DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+```
+
+
+
 事务的四个特性(ACID)
 
-1. 原子性atomicity, 一致性consistency, 隔离性isolation,持久性durability
+1. 原子性atomicity,  要么一起成功,要么一起失败.
+2. 一致性consistency,  事务中的前后改变要统一
+3. 隔离性isolation, 事务在没有提交之前, 事务之外是看不到的
+4. 持久性durability, 事务一旦提交, 就写到文件里了,就持久化了
 
 PHP级别的问题
 
@@ -249,4 +369,220 @@ PHP级别的问题
 没有必要在深入下去了:
 
 怎么看MySQL加了多少锁呢? 怎么看在哪里加了锁?
+
+
+
+# MySQL中观察事务隔离需要用到的SQL
+
+```sql
+-- 当前运行的事务
+select * from information_schema.innodb_trx;
+
+-- 当前出现的锁 <8.0
+select * from infomation_schema.innnodb_locks;
+
+-- 锁等待对应关系
+select * from infomation_schema.innodb_lock_waits
+
+-- autocommit的值
+select @@autocommit;
+
+-- 查看隔离级别
+select @@tx_isolation; -- <8.0
+select @@transcation_isolation; -- >=8.0
+show variables like '%isolation%'; -- 都可以
+-- 从5.7.20版本开始, transaction_isolation作为 tx_isolation的别名被引入, 在8.0版本后tx_isolation被废弃
+
+-- 查看当前数据库的线程情况
+show full processlist;
+
+# kill 进程
+kill 1825
+
+# 查看表的更新时间
+select * from information_schema.tables where table_schema= '数据库名称' AND table_name='表';mp
+
+# 整个数据库备份
+mysqldump -uroot -p --databases wxss > 文件地址/名称.sql
+```
+
+
+
+# PHP在什么场景下会出现 脏读 可重复度 不可重复读 幻读的问题?
+
+真正的业务是怎么样的?肯定是在有必要使用事务的情况, 而且在并发情况下, 这种问题还有可能会产生? 针对我们的业务,我们应该选用那种隔离级别才是最好的?因为毕竟隔离级别越高, 性能就越低?(为什么会这样,需要探究一下)
+
+可重复读, 不可重复读,对应的是(update操作)
+
+幻读, 针对的是insert
+
+
+
+# 修改隔离级别
+
+set [作用域] transaction isolation level [事务隔离级别]
+
+作用域: session 当前会话, global 全局
+
+隔离级别: read uncommitted , read committed, repeatable read, serializable
+
+做实验
+
+在PHPstorm里, 使用global修改, 对于已经打开的窗口, 隔离级别不会被改变, 新开的窗口会根据global设置的级别改变
+
+session设置的隔离级别, 只会在当前的窗口生效, 对于新开的窗口 和 已经打开的窗口都不会有影响
+
+# MySQL事务
+
+开启: start transaction 或者 begin
+
+> 注意: begin/start transcation 命令不是事务的开始, 命令之后的第一条命令才是事务的开始
+
+回滚: rollback
+
+提交: commit
+
+查看: ` select * from information_schema.innodb_trx;
+
+做实验验证
+
+```sql
+begin; -- 此时在另一个窗口查看innodb_trx, 没有事务在运行
+select * from interview.user where id=1; -- 此时才能看到事务开始了
+commit; 
+start transaction -- 此时在另一个窗口查看innodb_trx, 没有事务在运行
+select * from interview.user where id=1; -- 此时才能看到事务开始了
+```
+
+
+
+可重复度的情况下, 解决了重复读的问题, 也就是开启事务的时候数据是什么样子的, 在事务中就一直是那样, 即使,其他事务修改了这个数据, 并且提交了, 这个事务读取的还是原来的数值,上面说的是针对修改(update)  和 删除(delete) 操作的,  但是对增加(insert), 会和原来的情况不一致(`为什么会这样呢?`),事务里会读到删除和增加的修改
+
+做实验:
+
+| 事务1                                                    | 事务2                                                      |
+| -------------------------------------------------------- | ---------------------------------------------------------- |
+| begin;                                                   | begin;                                                     |
+| select * from interview.user where id=1;                 |                                                            |
+|                                                          | delete from interview.user where id=1;                     |
+| select * from interview.user where id=1; -- 此时数据还在 | select * from interview.user where id=1; -- 数据已经没有了 |
+|                                                          | commit;                                                    |
+| select * from interview.user where id=1;-- 此时数据还在  | select * from interview.user where id=1; -- 数据已经没有了 |
+| commit;                                                  |                                                            |
+| 对于删除保证了, 可重复读                                 |                                                            |
+
+
+
+# 事务隔离中的阻塞问题(并发性能)
+
+> 阻塞毫无疑问会影响并发的性能, 因为发生了阻塞,就意味着, 被阻塞事务需要等待其他事务执行完毕
+
+## 可重复读(repeatable read)中的幻读问题
+
+可重复读没有解决幻读的问题, 那么幻读问题在什么情况下会发生呢?
+
+`select * from performance_schema.data_locks;` 查出来的结果, 是什么意思?
+
+> 怀疑,这是真的吗?: 如果修改的时候, where条件字段没有索引,对于没有加索引的字段, MySQL因为无法定为数据,所以会对所有记录加锁, 然后过滤一遍, 不满足情况的就释放锁, 加锁, 又释放锁, 这样操作就极大的影响了性能,.
+
+LOCK_DATA: supremum pseudo-record
+
+LOCK_MODE:IX, X
+
+
+
+间隙锁(Next-Key), 解决并发和幻读的问题
+
+那间隙锁又是什么呢?
+
+准备数据
+
+```SQL
+truncate table interview.user;
+insert into interview.user(name, money) value ('间隙锁10',10);
+insert into interview.user(name, money) value ('间隙锁30',30);
+```
+
+where money=10 的情况
+
+| <10(间隙锁) | 10(行锁) | 10,30(间隙锁) | 30(行锁) | >30(间隙锁) |
+| ----------- | -------- | ------------- | -------- | ----------- |
+| 这里会锁    | 会锁     | 会锁          |          | 这里没锁??? |
+|             |          |               |          |             |
+
+
+
+## 间隙锁的实验
+
+等于10的记录会被阻塞
+
+实验验证没有问题
+
+| 事务1                                         | 事务2                                                   |
+| --------------------------------------------- | ------------------------------------------------------- |
+| begin;                                        | begin;                                                  |
+| select * from user                            |                                                         |
+| update user set name='间隙锁' where money=10; |                                                         |
+|                                               | insert into user(name,money) values('新插入的数据',10); |
+| select * from user where money=10             | wait...这里会被阻塞掉                                   |
+| commit;                                       | 事务1提交之后才能提交                                   |
+|                                               | commit;                                                 |
+
+插入的记录小于10(等于9)也会阻塞, 被间隙锁阻塞
+
+实验验证没有问题
+
+| 事务1                                         | 事务2                                                  |
+| --------------------------------------------- | ------------------------------------------------------ |
+| begin;                                        | begin;                                                 |
+| select * from user                            |                                                        |
+| update user set name='间隙锁' where money=10; |                                                        |
+|                                               | insert into user(name,money) values('新插入的数据',9); |
+| select * from user where money=10             | wait...这里会被阻塞掉                                  |
+| commit;                                       | 事务1提交之后才能提交                                  |
+|                                               | commit;                                                |
+
+插入的记录在10,30之间也会被阻塞
+
+实验验证没有问题
+
+| 事务1                                         | 事务2                                                   |
+| --------------------------------------------- | ------------------------------------------------------- |
+| begin;                                        | begin;                                                  |
+| select * from user                            |                                                         |
+| update user set name='间隙锁' where money=10; |                                                         |
+|                                               | insert into user(name,money) values('新插入的数据',20); |
+| select * from user where money=10             | wait...这里会被阻塞掉                                   |
+| commit;                                       | 事务1提交之后才能提交                                   |
+|                                               | commit;                                                 |
+
+插入记录>30就不会被阻塞, 为啥???
+
+我感觉这个会有问题
+
+实验验证没有问题,啪啪打脸, 神奇, 这是为什么呢?
+
+| 事务1                                         | 事务2                                                   |
+| --------------------------------------------- | ------------------------------------------------------- |
+| begin;                                        | begin;                                                  |
+| select * from user                            |                                                         |
+| update user set name='间隙锁' where money=10; |                                                         |
+|                                               | insert into user(name,money) values('新插入的数据',35); |
+| select * from user where money=10             | wait...这里会被阻塞掉                                   |
+| commit;                                       | 事务1提交之后才能提交                                   |
+|                                               | commit;                                                 |
+
+在可重复读的隔离级别下, 间隙锁对于大于现有记录的部分不会加间隙锁, 这是为什么呢? 小于的加锁了, 中间的也加锁了, 就大于的不加锁,明天我们来一起解决这个问题!!!
+
+我要是把索引删除了, 大于30的情况, 会不会就会锁上呢?
+
+实验验证, 确实吧索引删除了, 大于30 的情况也会锁, 锁表了
+
+再把索引加上, 看一下锁的情况
+
+经过实验验证, 如果加了索引, 就不会锁表了,确实没有锁表了, 而且里面还多了个锁的类型, 明天我也会一起探究一下是什么东西,这里先做个预告吧, 东西太多了,确实进度有点慢, 不过不着急,慢慢来
+
+B+树是什么东西?
+
+B+树是有序的
 
