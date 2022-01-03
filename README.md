@@ -1,4 +1,4 @@
-# 晶打开的interview
+# interview
 
 # 面试总结
 
@@ -137,7 +137,7 @@ abc上加了索引，ac，bc，ab会用到索引吗？
 
 
 
-# 脏读,幻读,的问题
+# 更新丢失(Lost Update),脏读(Dirty Reads),幻读(Phantom Reads),不可重复读(Non-Repeatable Reads)的问题
 
 什么叫脏读?幻读?还有不可重复读? 
 
@@ -585,4 +585,196 @@ where money=10 的情况
 B+树是什么东西?
 
 B+树是有序的
+
+当前读和快照读:  
+
+​	快照读,读取的是快照, 不加锁, 普通的读操作
+
+​	当前读,读取的是最新记录, 要加锁, 特殊的读操作, 修改,删除, 添加操作, 保证其他事务不能修改加锁的记录
+
+可以在SQL语句中主动加锁, 例如
+
+```sql
+select * from interview.user for update; -- for update 加的就是X锁,排他锁
+select * from interview.user lock in share mode  -- lock in share mode 加的就是共享锁, S锁
+```
+
+死锁?死锁?
+
+两个查看状况的命令是什么意思呢?
+
+> show full processlist
+>
+> show engine innodb status
+
+
+
+# MySQL 的锁
+
+锁是为了解决并发问题而诞生的, 不仅在MySQL中有应用,在其他的地方应用也很广泛, 这里我们只讨论MySQL中的锁, 锁的操作是消耗资源的, 锁的操作有 加锁(获得锁), 释放锁, 检查锁释放以解除
+
+共享锁(读锁): 别的事务可以读, 不能写
+
+排它锁(写锁): 别的事务, 不能读,也不能写
+
+## 锁的粒度
+
+表级锁: 开销小, 加锁快, 不会出现死锁, 但是加锁的面积大, 发生冲突的概率大, 并发效率低
+
+	* 表级锁, 适合以查询为主, 并发量少的数据
+
+行级锁: 开销大, 加锁慢, 会出现死锁,  只锁当前行, 发生冲突的概率小, 并发效率高
+
+	* 行级锁, 适合大量并发查, 加上 大量并发按条件修改的情况
+
+页面锁: 开销,加锁速度,粒度 中等, 会出现死锁, 支持并发, 并发效率中
+
+锁的类型
+
+GAP, 间隙锁, 间隙锁的存在意义就是防止幻读, 因为这种间隙锁的存在, 就要求我们, 修改数据的时候, 尽量使用等于条件, 避免使用范围条件, 来访问, 防止出现间隙锁 
+
+> 但是, 用等于也会出现间隙锁啊! 比如 money=10 的条件, 有记录10 和 30 的时候, 小于10 和10到30之间都加了间隙锁
+
+`S, X, IS, IX, S_GAP, X_GAP, IS_GAP, IX_GAP, or AUTO_INC for shared, exclusive, intention shared, intention exclusive row locks, shared and exclusive gap locks, intention shared and intention exclusive gap locks, and auto-increment table level lock, respectively.`
+
+| 名字     | 英文含义                        | 翻译           | 理解               |
+| -------- | ------------------------------- | -------------- | ------------------ |
+| S        | shared                          | 共享锁         |                    |
+| X        | Exclusive                       | 排它锁         |                    |
+| IS       | Intention shared                | 意向共享锁     |                    |
+| IX       | Intention exclusive row locks   | 意向排它锁     |                    |
+| S_GAP    | shared gap locks                | 共享间隙锁     |                    |
+| X_GAP    | exclusive gap locks             | 排他间隙锁     |                    |
+| IS_GAP   | intention shared gap locks      | 意向共享间隙锁 |                    |
+| IX_GAP   | intention exclusive gap locks   | 意向排他间隙锁 |                    |
+| AUTO_INC | auto-increment table level lock | 自动增加锁     |                    |
+| IIX      | insert intention exclusive lock | 插入意向间隙锁 | 只用于并发插入操作 |
+
+innodb在不同隔离级别情况下的加锁方式(8.0)
+
+| sql\隔离级别                                                 | read uncommited | read commited | reaptable read | serialize |
+| ------------------------------------------------------------ | --------------- | ------------- | -------------- | --------- |
+| select 相等                                                  |                 |               |                |           |
+| select 范围                                                  |                 |               |                |           |
+| update 相等                                                  |                 |               |                |           |
+| update 范围                                                  |                 |               |                |           |
+| delete 相等                                                  |                 |               |                |           |
+| delete 范围                                                  |                 |               |                |           |
+| insert                                                       |                 |               |                |           |
+| replace?无键冲突                                             |                 |               |                |           |
+| replace?键冲突                                               |                 |               |                |           |
+| select * from ... for update 相等                            |                 |               |                |           |
+| select * from ... for update 范围                            |                 |               |                |           |
+| select * from... in share mode 相等                          |                 |               |                |           |
+| select * from.. in share mode 范围                           |                 |               |                |           |
+| insert into ...,select...(指源表锁) innodb_lock_unsafe_for_binlog=on |                 |               |                |           |
+| insert into ...,select...(指源表锁) innodb_lock_unsafe_for_binlog=off |                 |               |                |           |
+| create table...., select..(指源表锁) innodb_lock_unsafe_for_binlog=on |                 |               |                |           |
+| create table...., select..(指源表锁) innodb_lock_unsafe_for_binlog=off |                 |               |                |           |
+
+
+
+
+
+replace是什么?
+
+指源表锁是什么?
+
+死锁情况模拟
+
+start transaction with consistent snapshot 是什么操作????
+
+能够创建一个, 快照读的事务, 读不用加锁, 能够保证读的一致性, 但是, 不能保证读取的是最新的数据
+
+
+
+做实验,验证不加索引的时候更新语句, 会加很多锁, 所以, 对于没有走索引条件的更新语句, 要注意,要慎用
+
+
+
+> 名词解释
+>
+> MVCC, MultiVersion Concurrency Control, 简称MVCC 或 MCC, 中文叫做, 多版本数据库或者叫做 数据多版本并发控制
+
+快照(snapshot), 
+
+快照读(snapshot read): 读取的是快照的版本, 不加锁
+
+当前读(current read): 读取的是最新版本数据, 加锁
+
+> 对串行化的理解, 串行化,就是一串的意思, 一个一个的来, 属于顺序执行, 就没有什么并发的问题了
+
+> 条件的字段加了索引, 也不一定就是行锁, 即便在条件中使用了索引, 如果MySQL认为 全表扫描比使用索引的效率要高 的情况下, MySQL就会使用表锁, 而不是行锁
+
+# InnoDB Monitors 是个什么东西?
+
+
+
+Next-Key Lock (临键锁): 是记录所和间隙锁的结合, 锁定一个范围,防止出现幻读, 我理解就是间隙太多了, 就给合并到一起了, 都上锁了, 就叫临键锁了吧???
+
+>  理解的有问题
+
+假如有1,3,5,7 四条记录, 如果在记录5上加 临键锁, 那么会这么加锁(3,5], 会把`小于` 5 的间隙也加上锁, 所以说, 临键锁相当于 间隙锁 + 记录锁
+
+> 注意, 这里是小于
+>
+> 为什么, 是小于不是大于呢? 根据这个规律, 我们应该注意哪些问题呢?
+
+Record Lock(记录锁): 当行记录上锁, 也就是我们日常所说的行锁
+
+# 锁的分类
+
+三种行锁 `算法`: 记录锁, 间隙锁, 临键锁
+
+按共享策略分: 共享锁, 排它锁, 意向共享锁, 意向排他锁
+
+按加锁策略分: 悲观锁, 乐观锁(悲观锁先加锁再操作, 乐观锁 直接操作再看有没有问题)
+
+> 意向锁,简写I, 英文intention, 存在的意义就是快速判断当前表是不是没有锁(指的是 排它锁或共享锁), 意思就是在加 行锁(排它锁 或 共享锁)之前, 先会对记录所在表加 `意向` 锁, 这样的话, 如果当前表中没有任何锁, 那么MySQL就能快速的判断出来可以加锁, 省的再去一行一行的遍历查看有没有加锁
+>
+> 
+>
+> 比如, 有个事务想加排它锁, 那他就看那个表有没有意向排它锁, 如果没有,就说明,当前表的所有记录上肯定就都没有排它锁, 那么他想加的记录肯定也没有排它锁, 那就放心加就好啦,  如果有意向排它锁, 那么就去看一看那条他要加的记录是否符合加锁的条件, 符合在加锁, 主要就是在没有锁的时候效率比较高
+>
+> 还有就是, 要锁表的时候, 如果表里面已经有行锁了, 那么表锁就会和行锁冲突, 加上意向锁就能避免这个问题了
+
+锁的冲突
+
+|                | 排它锁(X) | 共享锁(S) | 意向排它锁(IX) | 意向共享锁(IS) |
+| -------------- | --------- | --------- | -------------- | -------------- |
+| 排它锁(X)      | 冲突      | 冲突      | 冲突           | 冲突           |
+| 共享锁(S)      | 冲突      | 兼容      | 冲突           | 兼容           |
+| 意向排它锁(IX) | 冲突      | 冲突      | 兼容           | 兼容           |
+| 意向共享锁(IS) | 冲突      | 兼容      | 兼容           | 兼容           |
+|                |           |           |                |                |
+
+**预测锁**?????
+
+
+
+# 各种锁的触发
+
+## 行共享锁触发
+
+## 行排它锁触发
+
+## 共享间隙锁触发
+
+## 排他间隙锁触发
+
+## 意向行共享锁触发
+
+## 意向行排它锁触发
+
+## 意向共享间隙锁触发
+
+## 意向排他间隙锁触发
+
+> 注意: 如果在ru和rc级别下, 即使使用 select...in share mode 或 select ... for update, 也不能防止`幻读`, 因为这两个隔离级别, 只有行锁, 不会有间隙锁, 所以, 不能避免幻读
+
+幻读, 实际上就是间隙锁出了问题 . 
+
+
+
+
 
