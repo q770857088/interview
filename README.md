@@ -588,9 +588,9 @@ create index user_money_index
 | commit;                                       | 事务1提交之后才能提交                                   |
 |                                               | commit;                                                 |
 
-![image-20220105075848409](/Users/wangdi/Library/Application Support/typora-user-images/image-20220105075848409.png)
+![image-20220105075848409](./img/image-20220105075848409.png)
 
-![image-20220105075715333](/Users/wangdi/Library/Application Support/typora-user-images/image-20220105075715333.png)
+![image-20220105075715333](./img/image-20220105075715333.png)
 
 插入记录>30就不会被阻塞, 为啥???
 
@@ -899,11 +899,11 @@ X应该是记录之前的间隙
 
 money是普通索引的锁情况
 
-![image-20220105085623250](/Users/wangdi/Library/Application Support/typora-user-images/image-20220105085623250.png)
+![image-20220105085623250](./img/image-20220105085623250.png)
 
 money是唯一索引的锁情况`create unique index user_money_uindex on user (money);`
 
-![image-20220105090252713](/Users/wangdi/Library/Application Support/typora-user-images/image-20220105090252713.png)
+![image-20220105090252713](./img/image-20220105090252713.png)
 
 
 
@@ -967,13 +967,13 @@ insert into interview.user(name, money) value ('间隙锁30',30);
 
 >  图1:
 >
-> ![image-20220105210909339](/Users/wangdi/Library/Application Support/typora-user-images/image-20220105210909339.png)
+> ![image-20220105210909339](./img/image-20220105210909339.png)
 
 
 
 > 图2
 >
-> ![image-20220105212952778](/Users/wangdi/Library/Application Support/typora-user-images/image-20220105212952778.png)
+> ![image-20220105212952778](./img/image-20220105212952778.png)
 >
 > insert_intention 这个锁类型只有在等待状态的时候才能看到
 
@@ -981,13 +981,13 @@ insert into interview.user(name, money) value ('间隙锁30',30);
 
 > 图3
 >
-> ![image-20220106081704203](/Users/wangdi/Library/Application Support/typora-user-images/image-20220106081704203.png)
+> ![image-20220106081704203](./img/image-20220106081704203.png)
 
 
 
 > 图4
 >
-> ![image-20220106082651915](/Users/wangdi/Library/Application Support/typora-user-images/image-20220106082651915.png)
+> ![image-20220106082651915](./img/image-20220106082651915.png)
 
 
 
@@ -997,13 +997,13 @@ insert into interview.user(name, money) value ('间隙锁30',30);
 >
 > 此时会被阻塞, 并且会多一个等待的锁  和一个IX
 >
-> ![image-20220106164903561](/Users/wangdi/Library/Application Support/typora-user-images/image-20220106164903561.png)
+> ![image-20220106164903561](./img/image-20220106164903561.png)
 
 > select * from interview.user where money=10 for share;
 >
 > 此时会被阻塞, 并且会多一个等待的锁 和一个IS
 >
-> ![image-20220106165136463](/Users/wangdi/Library/Application Support/typora-user-images/image-20220106165136463.png)
+> ![image-20220106165136463](./img/image-20220106165136463.png)
 
 查看锁的方式 `select * from performance_schema.data_locks;`
 
@@ -1037,7 +1037,7 @@ create unique index user_money_uindex
 >
 > 执行语句后的锁情况
 >
-> ![image-20220106165753016](/Users/wangdi/Library/Application Support/typora-user-images/image-20220106165753016.png)
+> ![image-20220106165753016](./img/image-20220106165753016.png)
 >
 > 可以看到, 这里的锁类型是 X,REC_NOT_GAP 也就是说唯一索引的时候, MySQL可以精确的锁定一条记录, 所以就不需要间隙锁 或者 临建锁了, 那么后面的情况可想而知了, 也就不需要做实验验证了
 
@@ -1100,7 +1100,7 @@ insert into interview.user(name, money) value ('间隙锁30',30);
 
 > select * from user where money>20 for share ;
 >
-> ![image-20220106202927097](/Users/wangdi/Library/Application Support/typora-user-images/image-20220106202927097.png)
+> ![image-20220106202927097](./img/image-20220106202927097.png)
 >
 > ```sql
 > # 说明[10,30]的间隙被阻塞了
@@ -1123,7 +1123,7 @@ insert into interview.user(name, money) value ('间隙锁30',30);
 >
 > 加锁情况
 >
-> ![image-20220106194943707](/Users/wangdi/Library/Application Support/typora-user-images/image-20220106194943707.png)
+> ![image-20220106194943707](./img/image-20220106194943707.png)
 
 什么情况下可以观察到(IX,GAP) (IS,GAP), AUTO_INC, UNKNOWN?
 
