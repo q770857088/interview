@@ -177,7 +177,7 @@ if($ret){
 select * from interview.user where id=1; 
 ```
 
-![image-20220104083121757](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104083121757.png)
+![image-20220104083121757](./img/image-20220104083121757.png)
 
 > 锁类型(TYPE): 表锁(TABLE), 记录锁(RECORD)
 >
@@ -193,7 +193,7 @@ commit;
 
 >  只有一个意向排它锁
 
-![image-20220104084322381](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104084322381.png)
+![image-20220104084322381](./img/image-20220104084322381.png)
 
 ### 实验3: 修改(REPEATABLE-READ)
 
@@ -203,7 +203,7 @@ update interview.user set money=10 where id=2;
 commit;
 ```
 
-![image-20220104084506840](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104084506840.png)
+![image-20220104084506840](./img/image-20220104084506840.png)
 
 ### 实验4: 删除(REPEATABLE-READ)
 
@@ -213,7 +213,7 @@ delete from interview.user where id=1;
 commit;
 ```
 
-![image-20220104084837283](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104084837283.png)
+![image-20220104084837283](./img/image-20220104084837283.png)
 
 总结: 在主动加锁,修改, 删除的时候, 有IX, X, 在增加的时候, 只有意向排它锁
 
@@ -240,7 +240,7 @@ commit;
 
 
 
-![image-20220104093928298](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104093928298.png)
+![image-20220104093928298](./img/image-20220104093928298.png)
 
 
 
@@ -258,7 +258,7 @@ commit;
 >
 > 如果, 删除的数据存在, 有IX 和 X
 
-![image-20220104094140813](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104094140813.png)
+![image-20220104094140813](./img/image-20220104094140813.png)
 
 
 
@@ -272,7 +272,7 @@ update interview.user set money=11 where id=8; -- 有数据
 commit;
 ```
 
-![image-20220104094945647](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104094945647.png)
+![image-20220104094945647](./img/image-20220104094945647.png)
 
 如果没有数据, 就只加IX
 
@@ -284,7 +284,7 @@ commit;
 
 
 
-![image-20220104095909284](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104095909284.png)
+![image-20220104095909284](./img/image-20220104095909284.png)
 
 ### 实验8: 查询(select...for update)
 
@@ -300,7 +300,7 @@ commit ;
 
 
 
-![image-20220104095336591](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104095336591.png)
+![image-20220104095336591](./img/image-20220104095336591.png)
 
 
 
@@ -314,7 +314,7 @@ commit ;
 
 
 
-![image-20220104095506813](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104095506813.png)
+![image-20220104095506813](./img/image-20220104095506813.png)
 
 > 小结: 没有数据的时候, 为什么只有IX呢?因为行锁要加在数据上, 然后MySQL在表上面加了IX之后, 去找这条记录, 为了去加X锁, 但是, 没找到, 那就没法加锁了
 >
@@ -343,7 +343,7 @@ select * from interview.user;
 commit;
 ```
 
-![image-20220104101023539](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104101023539.png)
+![image-20220104101023539](./img/image-20220104101023539.png)
 
 ### 实验10: RC 排他 删除
 
@@ -358,7 +358,7 @@ commit;
 
 
 
-![image-20220104101245206](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104101245206.png)
+![image-20220104101245206](./img/image-20220104101245206.png)
 
 如果没有数据
 
@@ -373,7 +373,7 @@ commit;
 
 
 
-![image-20220104101347589](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104101347589.png)
+![image-20220104101347589](./img/image-20220104101347589.png)
 
 ### 实验11: 修改 rc 排他
 
@@ -388,7 +388,7 @@ commit;
 
 
 
-![image-20220104101622776](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104101622776.png)
+![image-20220104101622776](./img/image-20220104101622776.png)
 
 如果没有数据, IX
 
@@ -399,7 +399,7 @@ update interview.user set money=11 where id=3; -- 没有这条记录
 commit;
 ```
 
-![image-20220104101800900](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104101800900.png)
+![image-20220104101800900](./img/image-20220104101800900.png)
 
 ### 实验12: rc, 排他, 查询
 
@@ -412,7 +412,7 @@ select * from interview.user where id=6 for update ; -- 有记录X
 commit ;
 ```
 
-![image-20220104102310547](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104102310547.png)
+![image-20220104102310547](./img/image-20220104102310547.png)
 
 如果没有数据,IX
 
@@ -423,7 +423,7 @@ select * from interview.user where id=1 for update ;  -- id 是1 的数据已经
 commit ;
 ```
 
-![image-20220104102238958](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104102238958.png)
+![image-20220104102238958](./img/image-20220104102238958.png)
 
 然后还是, 我们下期再见👋🏻, 下期就是, rr下的排它锁了, 可能会出现间隙锁
 
@@ -448,7 +448,7 @@ select * from interview.user;
 commit;
 ```
 
-![image-20220104111745194](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104111745194.png)
+![image-20220104111745194](./img/image-20220104111745194.png)
 
 ### 实验14: rr, 排他, 删除
 
@@ -463,7 +463,7 @@ rollback;
 commit;
 ```
 
-![image-20220104112244458](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104112244458.png)
+![image-20220104112244458](./img/image-20220104112244458.png)
 
 有数据的时候
 
@@ -476,7 +476,7 @@ rollback;
 commit;
 ```
 
-![image-20220104112537434](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104112537434.png)
+![image-20220104112537434](./img/image-20220104112537434.png)
 
 ### 实验15: rr 修改, 排他
 
@@ -493,7 +493,7 @@ commit;
 
 
 
-![image-20220104112819511](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104112819511.png)
+![image-20220104112819511](./img/image-20220104112819511.png)
 
 没有数据的时候, IX,(X,GAP)
 
@@ -506,7 +506,7 @@ commit;
 
 ```
 
-![image-20220104113043836](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104113043836.png)
+![image-20220104113043836](./img/image-20220104113043836.png)
 
 
 
@@ -521,7 +521,7 @@ select * from interview.user where id=6 for update ; -- 有记录
 commit ;
 ```
 
-![image-20220104113525823](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104113525823.png)
+![image-20220104113525823](./img/image-20220104113525823.png)
 
 没有数据: IX, (X,GAP)
 
@@ -532,7 +532,7 @@ select * from interview.user where id=1 for update ;  -- id 是1 的数据已经
 commit ;
 ```
 
-![image-20220104113657317](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104113657317.png)
+![image-20220104113657317](./img/image-20220104113657317.png)
 
 > 总结: 在rr级别下, 如果记录不存在, 就会加间隙锁, 就是, 行锁的排它锁加不上, 在rr隔离级别下, 就会加间隙锁, 但是这个间隙锁的特性, 我们以后在讨论
 
@@ -583,7 +583,7 @@ commit;
 
 
 
-![image-20220104140309706](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104140309706.png)
+![image-20220104140309706](./img/image-20220104140309706.png)
 
 
 
@@ -601,7 +601,7 @@ commit;
 
 
 
-![image-20220104140709392](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104140709392.png)
+![image-20220104140709392](./img/image-20220104140709392.png)
 
 
 
@@ -617,7 +617,7 @@ commit;
 
 
 
-![image-20220104140815582](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104140815582.png)
+![image-20220104140815582](./img/image-20220104140815582.png)
 
 ### 实验19: S+ 排他 修改
 
@@ -631,7 +631,7 @@ update interview.user set money=14 where id=8; -- 有这条记录
 commit;
 ```
 
-![image-20220104141039312](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104141039312.png)
+![image-20220104141039312](./img/image-20220104141039312.png)
 
 没有记录IX, (X,GAP)
 
@@ -642,7 +642,7 @@ update interview.user set money=11 where id=3; -- 没有这条记录
 commit;
 ```
 
-![image-20220104141207123](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104141207123.png)
+![image-20220104141207123](./img/image-20220104141207123.png)
 
 ### 实现19: S+ 排他 查询
 
@@ -660,11 +660,11 @@ commit ;
 
 普通查
 
-![image-20220104141442658](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104141442658.png)
+![image-20220104141442658](./img/image-20220104141442658.png)
 
 显示加锁查
 
-![image-20220104141759529](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104141759529.png)
+![image-20220104141759529](./img/image-20220104141759529.png)
 
 没有记录:IS,(S,GAP)
 
@@ -678,12 +678,210 @@ commit ;
 
 普通查:IS,(S,GAP)
 
-![image-20220104142239634](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104142239634.png)
+![image-20220104142239634](./img/image-20220104142239634.png)
 
 显示加锁(select ... for update), IX, (X,GAP)
 
-![image-20220104142417467](/Users/wangdi/Library/Application Support/typora-user-images/image-20220104142417467.png)
+![image-20220104142417467](./img/image-20220104142417467.png)
 
 > 总结: 通过实验验证, 在serializable隔离模式下, 使用普通查, 也会自动加`共享锁` 如果显示的加(...for update), 就只有排它锁, 没有共享锁了
 
 好了, 我们下期见
+
+接下来我们了说一下读锁, 共享锁, Share Lock
+
+## 2共享锁的触发
+
+共享锁, 又叫读锁, 英文是Share Lock , 就是在读取的时候加的锁, 所以叫读锁, 顾名思义, 在读取的时候才会加这个锁
+
+在RU, RC,RR,S+隔离模式下, select 语句是否加读锁, 是怎么加的
+
+实验sql
+
+```sql
+begin;
+# 普通, 有索引,有记录
+select * from interview.user where id=6;
+
+# 普通, 有索引,没记录
+select * from interview.user where id=3;
+
+# 普通, 无索引,有记录
+select * from  interview.user where money=200;
+
+# 普通,=没有索引, 没记录
+select * from  interview.user where money=1;
+
+#
+# 显示加锁, 有索引,有记录
+select * from interview.user where id=6 for share ;
+select * from interview.user where id=6 lock in share mode ;
+
+# 显示加锁, 有索引,没记录
+select * from interview.user where id=3 for share ;
+
+# 显示加锁, 无索引,有记录
+select * from  interview.user where money=200 for share ;
+
+# 显示加锁,=没有索引, 没记录
+select * from  interview.user where money=1 for share ;
+
+
+#  为什么小于会加间隙锁, 大于不会加间隙锁?
+select * from interview.user where id>3; -- 大于的条件 不会加 间隙锁 GAP
+select * from interview.user where id<6; -- 小于的条件会加 间隙锁(S,GAP)
+
+
+begin;
+```
+
+
+
+查询是否加读锁:
+
+| 查询                           | RU                                     | RC                                     | RR                                                         | S+                                                         |
+| ------------------------------ | -------------------------------------- | -------------------------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- |
+| 普通,=条件有索引, 有记录       | 没有                                   | 没有                                   | 没有                                                       | IS, (S,REC_NOT_GAP)                                        |
+| 普通,=条件有索引, 没有记录     | 没有                                   | 没有                                   | 没有                                                       | IS, (S,GAP)                                                |
+| 普通,=条件没有索引, 有记录     | 没有                                   | 没有                                   | 没有                                                       | IS,S(所有行都加了共享锁), LOCK_DATA=supremum pseudo-record |
+| 普通,=没有索引, 没记录         | 没有                                   | 没有                                   | 没有                                                       | IS,S(所有行都加了共享锁), LOCK_DATA=supremum pseudo-record |
+| 显示加锁,=条件有索引, 有记录   | 有                                     | IS,(S,REC_NOT_GAP)                     | IS,(S,REC_NOT_GAP)                                         | IS,(S,REC_NOT_GAP)                                         |
+| 显示加锁,=条件有索引, 没有记录 | IS                                     | IS                                     | IS, (S,GAP)                                                | IS, (S,GAP)                                                |
+| 显示加锁,=条件没有索引, 有记录 | IS,(S,REC_NOT_GAP)(所有行都加了共享锁) | IS,(S,REC_NOT_GAP)(所有行都加了共享锁) | IS,S(所有行都加了共享锁), LOCK_DATA=supremum pseudo-record | IS,S(所有行都加了共享锁), LOCK_DATA=supremum pseudo-record |
+| 显示加锁,=没有索引, 没记录     | IS                                     | IS                                     | IS,S(所有行都加了共享锁), LOCK_DATA=supremum pseudo-record | IS,S(所有行都加了共享锁), LOCK_DATA=supremum pseudo-record |
+
+### 发现问题  为什么小于会加间隙锁, 大于不会加间隙锁?
+
+```sql
+select * from interview.user where id>3; -- 大于的条件 不会加 间隙锁 GAP
+select * from interview.user where id<6; -- 小于的条件会加 间隙锁(S,GAP)
+```
+
+大于是加了锁的, LOCK_MODE=S, LOCK_DATA = supremum pseudo-record 的作用就相当于加了next-key(临键锁), 达到了间隙锁的效果
+
+supremum pseudo-record, 这是什么???
+
+意思是比最大的索引值还要大, LOCK_DATA=supremum pseudo-record 的时候, 就相当于加了 next-key(临键锁)
+
+显示的加锁
+
+select ... lock in share mode
+
+select... for share
+
+
+
+今天先到这里, rr和rc下的实验, 我们下期再做, 再见👋🏻
+
+我们来做, rr 和rc 下的实验
+
+先修改隔离级别
+
+> 总结: ru和rc模式下是没有间隙锁的,GAP, 这就导致了, 查询在没有记录的时候只在表上加IS,在查询条件没有索引的时候, 所有行加的共享锁类型是(S,REC_NOT_GAP), 因为没有间隙锁, 即使显示的加锁, 也不能解决幻读的问题
+
+隔离级别在ru和rc模式下的实验
+
+```sql
+set session transaction isolation level read committed ;
+set session transaction isolation level read uncommitted ;
+show variables like '%isolation%';
+```
+
+| 事务A                                                        | 事务B                                                        |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| begin                                                        | begin;                                                       |
+| select * from interview.user where id>3; -- 只会在已有记录上加锁, 没有间隙锁 |                                                              |
+|                                                              | insert into interview.user(id,name,money) values (6,'张三3', 200); -- 插入成功 |
+|                                                              | commit;                                                      |
+| select * from interview.user where id>3;  -- 再次读取的时候, 发现上一次读取多了一条记录, 发生了幻读 |                                                              |
+
+这一期视频就先到这, 下期还是做实验, 就是做一下间隙锁和临键锁的实验, 好的,再见👋🏻
+
+# 间隙锁和临键锁
+
+> 间隙锁, 就是不存在的记录, 在一个区间上锁 比如说, 现在有记录 1,(2),3,(4,5) 6
+
+### 实验20: 间隙锁的触发
+
+事务隔离级别在RU和RC模式下,是没有间隙锁的
+
+X 和 (X,GAP) 和 (X, REC_NOT_GAP) 有什么区别呢?
+
+我的理解: X是排它锁, 包括了~~两~~左边的间隙,X_GAP 表示小于当前记录的所有间隙,(X, REC_NOT_GAP) 表示锁定当前一条记录
+
+准备环境:
+
+```sql
+# 表
+CREATE TABLE `user` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(200) DEFAULT NULL,
+  `money` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_money_index` (`money`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+# 数据
+truncate table interview.user;
+insert into interview.user(name, money) VALUE ('间隙锁',10);
+insert into interview.user(name, money) VALUE ('间隙锁2',30);
+select * from interview.user;
+```
+
+| 事务A                                                        | 事务B                                                        | 查看锁                                             |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | -------------------------------------------------- |
+| set session transaction isolation level repeatable read ;<br /> show variables like '%isolation%'; | set session transaction isolation level repeatable read ;<br /> show variables like '%isolation%'; |                                                    |
+| begin;                                                       | begin;                                                       |                                                    |
+| update interview.user set name='xx' where money=20;          |                                                              |                                                    |
+|                                                              |                                                              | select * from information_schema.INNODB_TRX;       |
+|                                                              |                                                              | select * from performance_schema.data_locks; # 图1 |
+|                                                              | insert into user (name, money) values ('新纪录',11); -- 被阻塞 |                                                    |
+|                                                              |                                                              | select * from performance_schema.data_locks; #图2  |
+|                                                              | 等待超时之后                                                 |                                                    |
+|                                                              |                                                              | select * from performance_schema.data_locks; #图3  |
+| Inset                                                        |                                                              |                                                    |
+|                                                              |                                                              | 看锁的情况 图4                                     |
+
+
+
+> 图1
+>
+> ![image-20220107104812242](./img/image-20220107104812242.png)
+
+> 图2
+>
+> ![image-20220107104515462](./img/image-20220107104515462.png)
+
+> 图3
+>
+> \[40001\\[1205\] Lock wait timeout exceeded; try restarting transaction
+>
+> ![image-20220107105708762](./img/image-20220107105708762.png)
+
+> 图4
+>
+> ```sql
+> insert into interview.user(name, money) VALUE ('间隙锁300',300); -- 不再(10,30)的间隙内
+> ```
+>
+> ![image-20220107110106598](./img/image-20220107110106598.png)
+
+X,GAP 他是在哪个间隙加到锁[10,30),11又在间隙中, 所以就被阻塞了?
+
+为什么不再20上直接加锁?那样不就不影响插入了吗?MySQL加锁的方式, `根据索引和已有记录去加锁`, 如果有money15这条记录, 他就会在(间隙15,30)加锁, 那就不会影响11的并发插入了
+
+> 注意: 在业务操作的时候不要update一条不存在的记录, 这样会影响其他事务并发插入数据, 降低了并发的性能
+>
+> 我们应该, 先select记录是否存在, 如果存在在来执行update操作, 就能避免这个问题
+>
+> 那MySQL为什么不这样做呢?
+
+> 总结: 除了update操作, 删除操作, 也要先查看记录是否存在
+>
+> 还有, 修改/删除的范围条件, 在并发业务中,要尽量少使用
+>
+> 比如 money>20, 如果已有记录10,30 插入11会被阻塞, 我们可以先select >20(快照读,不会加锁->阻塞) , 查询出记录的id, 然后用id去删除, id in(....), 就不会阻塞11插入了, 这样的话就能大大的增加并发性能
+
+好,那么今天就先到这里, 我们下期再见👋🏻
+
+下期说一下, 为什么rr级别没有完全解决幻读的问题, 什么情况解决了, 什么情况没有解决, 然后回顾一下以前遇到的问题, 看看哪些还没有解决, 要不要马上解决.
